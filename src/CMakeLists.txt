@@ -1,0 +1,12 @@
+include_directories(${SPH_SOURCE_DIR}/include/)
+add_executable(SPH
+    particle.cpp
+    basicStruct.cpp
+    eulerIntegrator.cpp
+    uniformGrid.cpp
+    solver.cpp
+    main.cpp
+    initializer.cpp
+    loader/loadWaterBox.cpp
+    writer/writeRawParticleData.cpp
+)

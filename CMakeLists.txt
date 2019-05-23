@@ -1,0 +1,5 @@
+project(SPH)
+cmake_minimum_required(VERSION 2.8)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build")
+set(CMAKE_CXX_FLAGS "-g3 -Wall -O3 -std=c++11")
+add_subdirectory(src)

@@ -66,6 +66,7 @@ bool solver::CFLRule(std::vector<particle > pArr )
 // Update the velocity 
 bool solver::update(std::vector<particle>& particleArr )
 {
+    float timeStart = getTimeElapse();
     std::vector<int>* neighborArrs = new std::vector<int>[particleArr.size()];
 
     // Find neighbors, compute densities and pressures
@@ -126,6 +127,9 @@ bool solver::update(std::vector<particle>& particleArr )
             grid.updateParticle(pId, curGridId, preGridId);
         }
     }
+
+    float timeEnd = getTimeElapse();
+    printf("From %.4f to %.4f", timeStart, timeEnd );
 
     delete [] neighborArrs;
     delete [] newVelocities;

@@ -16,6 +16,6 @@ int particle::computeGridId(float size, float length, float width, float height,
     int hId = int( (pos.z - minZ) / size );
 
     gridId = (hId * wNum + wId) * lNum + lId;
-
+    
     return gridId;
 }

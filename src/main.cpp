@@ -23,7 +23,7 @@ int main(int argc, char** argv )
     std::string outputDir;
     
     // Length of the video
-    float timeLength = 0.0f;
+    float timeLength = 2.0f;
 
     // Simulatuion parameters 
     int framePerSec = 30;
@@ -125,12 +125,15 @@ int main(int argc, char** argv )
         }
     }
 
+    std::cout<<"Fluid simulation."<<std::endl;
+
     // load water box  
     std::vector<float3> waterBox;
     loadWaterBox(waterFile, waterBox );
 
     // load obj 
     std::vector<float3 > points; 
+
 
     // Initialize the initializer 
     initializer init(numOfParticles, densityRest );

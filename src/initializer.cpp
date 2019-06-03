@@ -130,7 +130,7 @@ void initializer::initializeParticles(
                 float3 ySp = (j * h) * yAxis;
                 float3 zSp = (i * h) * zAxis;
 
-                float3 sp = xSp + ySp + zSp;
+                float3 sp = waterBox[0] + xSp + ySp + zSp;
 
                 float dx = distribution(generator );
                 float dy = distribution(generator );

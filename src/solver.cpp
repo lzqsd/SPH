@@ -4,7 +4,7 @@ solver::solver( float L, float W, float H, float S,
         float mX, float mY, float mZ, 
         int fps,
         float3 G, float d, float stiff, float v): 
-    grid(uniformGrid(L, W, H, S) ), integrator(eulerIntegrator( 1.0f / float(fps) ) )
+    grid(int(L*W*H/size/size/size), size), integrator(eulerIntegrator( 1.0f / float(fps) ) )
 {
     densityRest = d; 
     stiffness = stiff;
@@ -24,6 +24,8 @@ solver::solver( float L, float W, float H, float S,
     timeStep = 1.0f / framePerSec;
     timeElapse = 0.0f;
     frameCount = 0.0f;
+
+    
 }
     
 
@@ -31,8 +33,7 @@ solver::solver( float L, float W, float H, float S,
 void solver::init(std::vector<particle>& particleArr )
 {
     for(unsigned pId = 0; pId < particleArr.size(); pId++){
-        int gridId = particleArr[pId].computeGridId(size, length, width, height, 
-                minX, minY, minZ );
+        int gridId = grid.computeGridId(particleArr[pId].pos );
         grid.updateParticle(pId, gridId );
     }
 }
@@ -121,8 +122,7 @@ bool solver::update(std::vector<particle>& particleArr )
         
         // Update grid 
         int preGridId = particleArr[pId].gridId;
-        int curGridId = particleArr[pId].computeGridId(
-                size, length, width, height, minX, minY, minZ );
+        int curGridId = grid.computeGridId(particleArr[pId].pos );
         if(preGridId != curGridId){
             grid.updateParticle(pId, curGridId, preGridId);
         }

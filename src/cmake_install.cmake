@@ -1,4 +1,4 @@
-# Install script for directory: /media/jonathan/program/SPH/src
+# Install script for directory: /media/jonathan/8f37ce5e-caa5-4c58-85d9-291bba8741a3/SPH/src
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)

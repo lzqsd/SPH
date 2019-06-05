@@ -3,10 +3,11 @@
 
 #include "basicStruct.h"
 #include "eulerIntegrator.h"
-#include "uniformGrid.h"
+#include "hashGrid.h"
 #include "particle.h"
 
 #include <vector>
+#include <cmath>
 
 class solver{
 public:
@@ -65,7 +66,7 @@ private:
     float stiffness;
     float viscosity; 
     float3 gravityAcce;
-    uniformGrid grid;
+    hashGrid grid;
     float length, width, height, size;
     float minX, minY, minZ; 
     eulerIntegrator integrator;

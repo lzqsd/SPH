@@ -3,7 +3,7 @@ add_executable(SPH
     particle.cpp
     basicStruct.cpp
     eulerIntegrator.cpp
-    uniformGrid.cpp
+    hashGrid.cpp
     solver.cpp
     main.cpp
     initializer.cpp

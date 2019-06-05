@@ -17,11 +17,6 @@ public:
     float density;
 
     int gridId;
-
-    int computeGridId(float size, 
-            float length, float width, float height, 
-            float minX, float minY, float minZ );
-
 private:
 };
 

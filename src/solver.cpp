@@ -1,31 +1,23 @@
 #include "solver.h"
 
-solver::solver( float L, float W, float H, float S, 
-        float mX, float mY, float mZ, 
-        int fps,
-        float3 G, float d, float stiff, float v): 
-    grid(int(L*W*H/size/size/size), size), integrator(eulerIntegrator( 1.0f / float(fps) ) )
+solver::solver( float S, std::vector<objLoader::shape_t> shs,  
+        int gridNum, int fps,
+        float3 G, float d, float stiff, float v ): 
+    grid(hashGrid(gridNum, S) ), 
+    integrator(eulerIntegrator( 1.0f / float(fps) ) )
 {
     densityRest = d; 
     stiffness = stiff;
     viscosity = v;
     gravityAcce = G;
-    length = L;
-    width = W; 
-    height = H;
     size = S;
-
-    // min X, Y, Z
-    minX = mX;
-    minY = mY;
-    minZ = mZ;
 
     framePerSec = fps;
     timeStep = 1.0f / framePerSec;
     timeElapse = 0.0f;
-    frameCount = 0.0f;
+    frameCount = 0.0f; 
 
-    
+    shapes = shs;
 }
     
 
@@ -35,21 +27,23 @@ void solver::init(std::vector<particle>& particleArr )
     for(unsigned pId = 0; pId < particleArr.size(); pId++){
         int gridId = grid.computeGridId(particleArr[pId].pos );
         grid.updateParticle(pId, gridId );
+        particleArr[pId].gridId = gridId;
     }
+    std::cout<<"Finish building grid!"<<std::endl;
 }
 
 // Set time step according to CFL rule 
 bool solver::CFLRule(std::vector<particle > pArr )
 {   
-    float vMin = 0;
+    float vMax = 0;
     for(unsigned i = 0; i < pArr.size(); i++){
         float3 v = pArr[i].vel;
-        if(v.norm2() > vMin ){
-            vMin = v.norm2();
+        if(v.norm2() > vMax ){
+            vMax = v.norm2();
         }
     }
     float h = size / 2.0;
-    float t = 0.4 * h / std::max(vMin, 1e-10f);
+    float t = 0.4 * h / std::max(vMax, 1e-10f);
     if(t + timeElapse > float(frameCount +1.0f) / float(framePerSec) ){
         timeStep = float(frameCount + 1.0f) / float(framePerSec) - timeElapse;
         timeElapse = float(frameCount + 1.0f) / float(framePerSec );
@@ -61,6 +55,7 @@ bool solver::CFLRule(std::vector<particle > pArr )
         timeStep = t;
         return false;
     }
+    std::cout<<"Time step: "<<timeStep<<std::endl;
     return true;
 }
 
@@ -68,13 +63,13 @@ bool solver::CFLRule(std::vector<particle > pArr )
 bool solver::update(std::vector<particle>& particleArr )
 {
     float timeStart = getTimeElapse();
-    std::vector<int>* neighborArrs = new std::vector<int>[particleArr.size()];
+    std::unordered_set<int>* neighborArrs = new std::unordered_set<int>[particleArr.size()];
 
     // Find neighbors, compute densities and pressures
     for(unsigned pId = 0; pId < particleArr.size(); pId++){
         // Find neighbors 
         int gridId = particleArr[pId].gridId;
-        std::vector<int> neighborArr = grid.query(pId, gridId, particleArr );
+        std::unordered_set<int> neighborArr = grid.query(pId, gridId, particleArr );
         
         // Compute density 
         computeDensity(pId, neighborArr, particleArr);
@@ -88,11 +83,12 @@ bool solver::update(std::vector<particle>& particleArr )
     integrator.setTimeStep(timeStep );
 
 
-    // Compute forces, velocities and positinons (Currently we do not handle boundary issues)
+    // Compute forces, velocities and positions (Currently we do not handle boundary issues)
     float3* newVelocities = new float3[particleArr.size()]; 
     float3* newPositions = new float3[particleArr.size()];
+
     for(unsigned pId = 0; pId < particleArr.size(); pId++){
-        std::vector<int> neighborArr = neighborArrs[pId];
+        std::unordered_set<int> neighborArr = neighborArrs[pId];
 
         // Compute forces 
         float3 pForce = computePressureForce(pId, neighborArr, particleArr );
@@ -101,7 +97,7 @@ bool solver::update(std::vector<particle>& particleArr )
 
         float3 force = pForce + vForce + gForce;
 
-        // Compute new velocities and positinons 
+        // Compute new velocities and positions 
         float3 acce = force / particleArr[pId].mass;
         
         float3 vel = particleArr[pId].vel;
@@ -113,10 +109,17 @@ bool solver::update(std::vector<particle>& particleArr )
     }
 
     // Update particle and grid 
+    bool isHit = false;
     for(unsigned pId = 0; pId < particleArr.size(); pId++){
         float3 pos = newPositions[pId];
         float3 vel = newVelocities[pId];
-        
+
+        float3 oldPos = particleArr[pId].pos; 
+
+        if(reflectAtBoundary(oldPos, pos, vel) ){
+            isHit = true;
+        }
+
         particleArr[pId].pos = pos;
         particleArr[pId].vel = vel;
         
@@ -125,11 +128,15 @@ bool solver::update(std::vector<particle>& particleArr )
         int curGridId = grid.computeGridId(particleArr[pId].pos );
         if(preGridId != curGridId){
             grid.updateParticle(pId, curGridId, preGridId);
+            particleArr[pId].gridId = curGridId;
         }
     }
-
+    
+    if(isHit == true){
+        std::cout<<"Hit the boundary."<<std::endl;
+    }
     float timeEnd = getTimeElapse();
-    printf("From %.4f to %.4f", timeStart, timeEnd );
+    printf("From %.4f to %.4f\n", timeStart, timeEnd );
 
     delete [] neighborArrs;
     delete [] newVelocities;
@@ -140,7 +147,7 @@ bool solver::update(std::vector<particle>& particleArr )
 
 
 // Steps to compute velocity
-void solver::computeDensity(int pId, std::vector<int>& neighborArr, 
+void solver::computeDensity(int pId, std::unordered_set<int>& neighborArr, 
         std::vector<particle>& particleArr )
 {
     float3 pos1 = particleArr[pId].pos; 
@@ -148,6 +155,8 @@ void solver::computeDensity(int pId, std::vector<int>& neighborArr,
     float density = kernel(pos1, pos1 ) * mass1;
 
     for(const auto& nId : neighborArr){
+        if(nId == pId )
+            continue;
         float3 pos2 = particleArr[nId].pos;
         float mass2 = particleArr[nId].mass;
         density += kernel(pos1, pos2) * mass2;
@@ -162,7 +171,7 @@ void solver::computePressure(int pId, std::vector<particle>& particleArr )
     particleArr[pId ].pressure = pressure;
 }
 
-float3 solver::computePressureForce(int pId, std::vector<int>& neighborArr, 
+float3 solver::computePressureForce(int pId, std::unordered_set<int>& neighborArr, 
             std::vector<particle>& particleArr )
 {
     float3 force(0, 0, 0); 
@@ -182,10 +191,11 @@ float3 solver::computePressureForce(int pId, std::vector<int>& neighborArr,
         force = force + coef * grad;
     }
     force = - m1 * force;
+
     return force;
 }
 
-float3 solver::computeViscosityForce(int pId, std::vector<int>& neighborArr, 
+float3 solver::computeViscosityForce(int pId, std::unordered_set<int>& neighborArr, 
             std::vector<particle>& particleArr )
 {
     float3 force(0, 0, 0);
@@ -215,6 +225,80 @@ float3 solver::computeGravityForce(int pId, std::vector<particle>& particleArr )
 {
     float3 gForce = particleArr[pId].mass * gravityAcce;
     return gForce;
+}
+
+
+bool solver::reflectAtBoundary(const float3& pos1, float3& pos2, float3& velocity){
+    bool isHit = false;
+    for(unsigned n = 0; n < shapes.size(); n++){
+        unsigned faceNum = shapes[n].mesh.indicesP.size() / 3;
+        for(unsigned i = 0; i < faceNum; i++){
+            int v1id = shapes[n].mesh.indicesP[3*i];
+            int v2id = shapes[n].mesh.indicesP[3*i+1];
+            int v3id = shapes[n].mesh.indicesP[3*i+2];
+
+            float3 v1(shapes[n].mesh.positions[3*v1id], 
+                    shapes[n].mesh.positions[3*v1id + 1], 
+                    shapes[n].mesh.positions[3*v1id+2] );
+            float3 v2(shapes[n].mesh.positions[3*v2id], 
+                    shapes[n].mesh.positions[3*v2id + 1], 
+                    shapes[n].mesh.positions[3*v2id+2] );
+            float3 v3(shapes[n].mesh.positions[3*v3id], 
+                    shapes[n].mesh.positions[3*v3id + 1], 
+                    shapes[n].mesh.positions[3*v3id+2] ); 
+
+            float3 N = (v2 - v1).cross(v3 - v1);
+            float normN = N.norm2();
+            N = N / std::max(normN, 1e-10f); 
+            
+            float de = (pos1 - v1).dot(N) - (pos2 - v1).dot(N);
+            float nu = (pos1 - v1).dot(N);
+            
+            if(de == 0 or de * nu < 0 or fabs(nu) > fabs(de) ){
+                continue;
+            }
+            float t = nu / de;
+            float3 hitpoint = pos1 + t * (pos2 - pos1);
+
+            // check if the hitpoint is inside triangle 
+            float ind1 = (v2 - v1).cross(hitpoint - v1).dot( 
+                    (hitpoint - v1).cross(v3-v1) );
+            if(ind1 < 0){
+                continue;
+            }
+
+            float ind2 = (v1 - v2).cross(hitpoint - v2).dot(
+                    (hitpoint - v2).cross(v3 - v2) );
+            if(ind2 < 0){
+                continue;
+            }
+
+            float ind3 = (v1 - v3).cross(hitpoint - v3).dot(
+                    (hitpoint - v3).cross(v2 - v3) );
+            if(ind3 < 0){
+                continue;
+            }
+            
+            // Reflect position and velocity 
+            isHit = true;
+            float3 newDirect = (hitpoint - pos1) 
+                - 2 * (hitpoint - pos1).dot(N) * N;
+            newDirect = newDirect / std::max(newDirect.norm2(), 1e-10f);
+            
+            float posNorm = (pos2 - pos1).norm2() * (1 - nu / de);
+            float velNorm = velocity.norm2();
+            
+            pos2 = posNorm * newDirect + hitpoint;
+            velocity = velNorm * newDirect;
+            if(isHit == true ){
+                break;
+            }
+        }
+        if(isHit == true){
+            break;
+        }
+    }
+    return isHit;
 }
 
 // Kernel function 

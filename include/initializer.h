@@ -18,25 +18,18 @@ class initializer{
 public:
     initializer( 
             int n, 
-            float d = 1e3f, 
-            float mRate = 0.2 );
+            float d = 1e3f );
     
     // Initialize the 
     void initialize(
                 std::vector<particle>& particleArr, 
-                const std::vector<float3>& points,
                 const std::vector<float3>& waterBox,
-                float& length, float& width, float& height, 
-                float& size, 
-                float& minX, float& minY, float& minZ
+                float& size
             );
 private:
     void computeGridParameters(
-            const std::vector<float3>& points, 
             const std::vector<float3>& waterBox, 
-            float& length, float& width, float& height, 
-            float& size, 
-            float& minX, float& minY, float& minZ
+            float& size
             );
     void initializeParticles(
             float size, 
@@ -45,7 +38,6 @@ private:
 
     float numOfParticles; 
     float densityRest; 
-    float marginRate; 
 };
 
 #endif

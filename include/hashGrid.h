@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstdint>
+#include <algorithm>
 #include <unordered_set>
 
 #include "basicStruct.h"
@@ -14,9 +15,9 @@ public:
     
     int getGridNum(){return gridNum; }     
     int computeGridId(float3 pos );
-    int computeGridId(std::int64_t x, std::int64_t y, std::int64_t z);
+    int computeGridId(long long x, long long y, long long z);
     void updateParticle(int pId, int curId, int preId=-1); 
-    std::vector<int> query(int pId, int gridId, 
+    std::unordered_set<int> query(int pId, int gridId, 
             std::vector<particle> particleArr );
     
 private: 
@@ -24,9 +25,9 @@ private:
     int gridNum; 
     float size; 
 
-    static const std::int64_t p1 = 73856093; 
-    static const std::int64_t p2 = 19349663; 
-    static const std::int64_t p3 = 83492791;
+    static const long long p1 = 73856093; 
+    static const long long p2 = 19349663; 
+    static const long long p3 = 83492791;
 };
 
 #endif

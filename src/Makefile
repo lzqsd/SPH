@@ -139,6 +139,30 @@ basicStruct.cpp.s:
 	cd /media/jonathan/8f37ce5e-caa5-4c58-85d9-291bba8741a3/SPH && $(MAKE) -f src/CMakeFiles/SPH.dir/build.make src/CMakeFiles/SPH.dir/basicStruct.cpp.s
 .PHONY : basicStruct.cpp.s
 
+eosSolver.o: eosSolver.cpp.o
+.PHONY : eosSolver.o
+
+# target to build an object file
+eosSolver.cpp.o:
+	cd /media/jonathan/8f37ce5e-caa5-4c58-85d9-291bba8741a3/SPH && $(MAKE) -f src/CMakeFiles/SPH.dir/build.make src/CMakeFiles/SPH.dir/eosSolver.cpp.o
+.PHONY : eosSolver.cpp.o
+
+eosSolver.i: eosSolver.cpp.i
+.PHONY : eosSolver.i
+
+# target to preprocess a source file
+eosSolver.cpp.i:
+	cd /media/jonathan/8f37ce5e-caa5-4c58-85d9-291bba8741a3/SPH && $(MAKE) -f src/CMakeFiles/SPH.dir/build.make src/CMakeFiles/SPH.dir/eosSolver.cpp.i
+.PHONY : eosSolver.cpp.i
+
+eosSolver.s: eosSolver.cpp.s
+.PHONY : eosSolver.s
+
+# target to generate assembly for a file
+eosSolver.cpp.s:
+	cd /media/jonathan/8f37ce5e-caa5-4c58-85d9-291bba8741a3/SPH && $(MAKE) -f src/CMakeFiles/SPH.dir/build.make src/CMakeFiles/SPH.dir/eosSolver.cpp.s
+.PHONY : eosSolver.cpp.s
+
 eulerIntegrator.o: eulerIntegrator.cpp.o
 .PHONY : eulerIntegrator.o
 
@@ -234,6 +258,30 @@ loader/loadWaterBox.s: loader/loadWaterBox.cpp.s
 loader/loadWaterBox.cpp.s:
 	cd /media/jonathan/8f37ce5e-caa5-4c58-85d9-291bba8741a3/SPH && $(MAKE) -f src/CMakeFiles/SPH.dir/build.make src/CMakeFiles/SPH.dir/loader/loadWaterBox.cpp.s
 .PHONY : loader/loadWaterBox.cpp.s
+
+loader/objLoader.o: loader/objLoader.cpp.o
+.PHONY : loader/objLoader.o
+
+# target to build an object file
+loader/objLoader.cpp.o:
+	cd /media/jonathan/8f37ce5e-caa5-4c58-85d9-291bba8741a3/SPH && $(MAKE) -f src/CMakeFiles/SPH.dir/build.make src/CMakeFiles/SPH.dir/loader/objLoader.cpp.o
+.PHONY : loader/objLoader.cpp.o
+
+loader/objLoader.i: loader/objLoader.cpp.i
+.PHONY : loader/objLoader.i
+
+# target to preprocess a source file
+loader/objLoader.cpp.i:
+	cd /media/jonathan/8f37ce5e-caa5-4c58-85d9-291bba8741a3/SPH && $(MAKE) -f src/CMakeFiles/SPH.dir/build.make src/CMakeFiles/SPH.dir/loader/objLoader.cpp.i
+.PHONY : loader/objLoader.cpp.i
+
+loader/objLoader.s: loader/objLoader.cpp.s
+.PHONY : loader/objLoader.s
+
+# target to generate assembly for a file
+loader/objLoader.cpp.s:
+	cd /media/jonathan/8f37ce5e-caa5-4c58-85d9-291bba8741a3/SPH && $(MAKE) -f src/CMakeFiles/SPH.dir/build.make src/CMakeFiles/SPH.dir/loader/objLoader.cpp.s
+.PHONY : loader/objLoader.cpp.s
 
 main.o: main.cpp.o
 .PHONY : main.o
@@ -343,6 +391,9 @@ help:
 	@echo "... basicStruct.o"
 	@echo "... basicStruct.i"
 	@echo "... basicStruct.s"
+	@echo "... eosSolver.o"
+	@echo "... eosSolver.i"
+	@echo "... eosSolver.s"
 	@echo "... eulerIntegrator.o"
 	@echo "... eulerIntegrator.i"
 	@echo "... eulerIntegrator.s"
@@ -355,6 +406,9 @@ help:
 	@echo "... loader/loadWaterBox.o"
 	@echo "... loader/loadWaterBox.i"
 	@echo "... loader/loadWaterBox.s"
+	@echo "... loader/objLoader.o"
+	@echo "... loader/objLoader.i"
+	@echo "... loader/objLoader.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

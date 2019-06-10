@@ -5,15 +5,15 @@
 #include "eulerIntegrator.h"
 #include "hashGrid.h"
 #include "particle.h"
+#include "loader.h"
 
 #include <vector>
 #include <cmath>
 
 class solver{
 public:
-    solver( float L, float W, float H, float S, 
-            float mX, float mY, float maZ, 
-            int fps = 30, 
+    solver( float S, std::vector<objLoader::shape_t> shs, 
+            int gridNum = 10000, int fps = 30, 
             float3 G = float3(0.0f, 9.8f, 0.0f), 
             float d = 1e3f, float stiff = 1119e3f, float v=1);
     // Init grid 
@@ -35,16 +35,19 @@ public:
     float getViscosity() {return viscosity; }
     float3 getGravityAcce() { return gravityAcce; }
 
-private:
+protected:
     // Steps to compute velocity
-    void computeDensity(int pId, std::vector<int>& neighborArr, 
+    void computeDensity(int pId, std::unordered_set<int>& neighborArr, 
             std::vector<particle>& particleArr );
     void computePressure(int pId, std::vector<particle>& particleArr );
-    float3 computePressureForce(int pId, std::vector<int>& neighborArr, 
+    float3 computePressureForce(int pId, std::unordered_set<int>& neighborArr, 
             std::vector<particle>& particleArr );
-    float3 computeViscosityForce(int pId, std::vector<int>& neighborArr, 
+    float3 computeViscosityForce(int pId, std::unordered_set<int>& neighborArr, 
             std::vector<particle>& particleArr );
     float3 computeGravityForce(int pId, std::vector<particle>& particleArr ); 
+
+    // Reflect the velocity and location if hit a boundary 
+    bool reflectAtBoundary(const float3& pos1, float3& pos2, float3& velocity);
 
     // Set time step according to CFL rule 
     // Return true if we render a new frame 
@@ -56,6 +59,8 @@ private:
 
     // Derivative of kernel 
     float3 kernelGrad(float3 pos1, float3 pos2);
+    
+    float size;
 
     int framePerSec; 
     float timeStep;
@@ -67,9 +72,9 @@ private:
     float viscosity; 
     float3 gravityAcce;
     hashGrid grid;
-    float length, width, height, size;
-    float minX, minY, minZ; 
     eulerIntegrator integrator;
+    
+    std::vector<objLoader::shape_t> shapes;
 };
 
 #endif

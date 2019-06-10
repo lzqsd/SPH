@@ -144,6 +144,16 @@ float float3::dot(const float3& f){
     return x * f.x + y * f.y + z * f.z;
 }
 
+// Cross product 
+float3 float3::cross(const float3& f){
+    float3 res (
+            y * f.z - z * f.y, 
+            z * f.x - x * f.z, 
+            x * f.y - y * f.x
+            );
+    return res; 
+}
+
 // Equal 
 float3 float3::operator=(const float3& f){
     x = f.x;

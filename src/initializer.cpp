@@ -1,27 +1,21 @@
 #include "initializer.h"
 
-initializer::initializer(int n, float d, float mRate){
+initializer::initializer(int n, float d ){
     numOfParticles = n;
     if(numOfParticles <= 0){
         std::cout<<"Wrong: the number of particles has to be larger than 0."<<std::endl;
         exit(1);
     }
     densityRest = d; 
-    marginRate = mRate;
 }
 
 void initializer::initialize(
         std::vector<particle>& particleArr, 
-        const std::vector<float3>& points,
         const std::vector<float3>& waterBox,
-        float& length, float& width, float& height, 
-        float& size, 
-        float& minX, float& minY, float& minZ)
+        float& size)
 {
     computeGridParameters(
-            points, waterBox, 
-            length, width, height, size, 
-            minX, minY, minZ );
+            waterBox, size );
 
     initializeParticles(
             size, 
@@ -29,11 +23,8 @@ void initializer::initialize(
 }
 
 void initializer::computeGridParameters(
-            const std::vector<float3>& points, 
             const std::vector<float3>& waterBox, 
-            float& length, float& width, float& height, 
-            float& size, 
-            float& minX, float& minY, float& minZ
+            float& size
             )
 {
     if(waterBox.size() != 4){
@@ -41,50 +32,14 @@ void initializer::computeGridParameters(
         exit(1);
     }
     
-    // Compute the boundary
-    minX = 1e10f; minY = 1e10f; minZ = 1e10f;
-    float maxX=-1e10f, maxY = -1e10f, maxZ=-1e10f; 
-    for(unsigned i = 0; i < points.size(); i++){
-        float3 f = points[i];
-
-        maxX = std::max(maxX, f.x);
-        maxY = std::max(maxY, f.y);
-        maxZ = std::max(maxZ, f.z);
-
-        minX = std::min(minX, f.x);
-        minY = std::min(minY, f.y);
-        minZ = std::min(minZ, f.z);
-    }
-    
-    for(unsigned i = 0; i < waterBox.size(); i++){
-        float3 f = waterBox[i];
-
-        maxX = std::max(maxX, f.x);
-        maxY = std::max(maxY, f.y);
-        maxZ = std::max(maxZ, f.z);
-
-        minX = std::min(minX, f.x);
-        minY = std::min(minY, f.y);
-        minZ = std::min(minZ, f.z); 
-    }
-    
     // Compute the simulation region 
-    float L = maxX - minX;
-    float W = maxY - minY;
-    float H = maxZ - minZ;
+    float length = (waterBox[1] - waterBox[0]).norm2();
+    float width = (waterBox[2] - waterBox[0]).norm2();
+    float height = (waterBox[3] - waterBox[0]).norm2();
 
-    length = L * (1 + 2 * marginRate );
-    width = W * (1 + 2 * marginRate );
-    height = H * (1 + 2 * marginRate );
-
-    minX -= L * marginRate;
-    minY -= W * marginRate;
-    minZ -= H * marginRate;
-
-    float volumeUnit = (L * W * H) / numOfParticles;
+    float volumeUnit = (length * width * height) / numOfParticles;
     float h = cbrt(volumeUnit );
     size = h * 2;
-
 
     return;
 }
@@ -136,12 +91,13 @@ void initializer::initializeParticles(
                 float dy = distribution(generator );
                 float dz = distribution(generator );
 
-                if( (dx + k) * h > length || (dy + j) * h > width 
-                        || (dz + i) * h > height) {
+                if( (dx*0.001 + k) * h > length || (dy*0.001 + j) *h > width 
+                        || (dz*0.001 + i) *h > height) {
                     continue;
                 }
 
-                float3 pos = sp + dx*h*xAxis + dy*h*yAxis + dz*h*zAxis;
+                float3 pos = sp + dx*0.001*h*xAxis + 
+                    dy*0.001*h*yAxis + dz*0.001*h*zAxis;
                 particle p;
                 p.pos = pos;
                 p.vel = float3(0.0f, 0.0f, 0.0f);

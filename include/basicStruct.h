@@ -42,6 +42,9 @@ public:
     // Dot product
     float dot(const float3& f);
 
+    // Cross product 
+    float3 cross(const float3& f);
+
     // Equal 
     float3 operator=(const float3& f);
 };

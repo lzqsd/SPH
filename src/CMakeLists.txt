@@ -5,10 +5,13 @@ add_executable(SPH
     eulerIntegrator.cpp
     hashGrid.cpp
     solver.cpp
+    basicSolver.cpp
     eosSolver.cpp
     main.cpp
     initializer.cpp
+    densityVolume.cpp
     loader/objLoader.cpp
-    loader/loadWaterBox.cpp
+    loader/loadBox.cpp
     writer/writeRawParticleData.cpp
+    writer/writeVolumeData.cpp
 )

@@ -16,7 +16,7 @@
 #include <sstream>
 #include <iostream>
 
-void loadWaterBox(std::string fileName, std::vector<float3>& waterBox );
+void loadBox(std::string fileName, std::vector<float3>& box );
 
 namespace objLoader {
 

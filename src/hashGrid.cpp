@@ -10,7 +10,7 @@ hashGrid::hashGrid(int gn, float s){
     }
 }
 
-int hashGrid::computeGridId(float3 pos){
+int hashGrid::computeGridId(float3 pos) const {
     long long x = (long long)(pos.x / size );
     long long y = (long long)(pos.y / size );
     long long z = (long long)(pos.z / size );
@@ -18,7 +18,7 @@ int hashGrid::computeGridId(float3 pos){
     return gridId; 
 }
 
-int hashGrid::computeGridId(long long x, long long y, long long z){
+int hashGrid::computeGridId(long long x, long long y, long long z) const{
     int gridId = ( (x ^ y) ^ z) % (long long)(gridNum );
     gridId = (gridId < 0) ? gridNum + gridId : gridId;
     return gridId; 
@@ -53,7 +53,7 @@ void hashGrid::updateParticle(int pId, int curId, int preId ){
     }
 }
 
-std::unordered_set<int> hashGrid::query(int pId, int gridId, std::vector<particle> pArr ){
+std::unordered_set<int> hashGrid::query(int pId, const std::vector<particle>& pArr ) const{
     particle P = pArr[pId ];
 
     long long x = (long long)(P.pos.x / size );
@@ -64,13 +64,38 @@ std::unordered_set<int> hashGrid::query(int pId, int gridId, std::vector<particl
     for(long long i=-1; i<=1; i++){
         for(long long j=-1; j<=1; j++){
             for(long long k=-1; k<=1; k++){
-                gridId = computeGridId(x+i, y+j, z+k);
+                int gridId = computeGridId(x+i, y+j, z+k);
                 for(auto it = pTable[gridId].begin(); it != pTable[gridId].end(); it++){
                     int newPId = *it;
                     if(newPId == pId ){
                         continue;
                     }
                     float3 diff = (pArr[pId].pos - pArr[newPId].pos);
+                    if(diff.norm2() < size){
+                        pIdArr.insert(newPId);
+                    }
+                }   
+            }
+        }
+    }
+    return pIdArr;
+}
+
+
+std::unordered_set<int> hashGrid::query(float3 pos, const std::vector<particle>& pArr ) const {
+
+    long long x = (long long)(pos.x / size );
+    long long y = (long long)(pos.y / size );
+    long long z = (long long)(pos.z / size );
+
+    std::unordered_set<int> pIdArr; 
+    for(long long i=-1; i<=1; i++){
+        for(long long j=-1; j<=1; j++){
+            for(long long k=-1; k<=1; k++){
+                int gridId = computeGridId(x+i, y+j, z+k);
+                for(auto it = pTable[gridId].begin(); it != pTable[gridId].end(); it++){
+                    int newPId = *it;
+                    float3 diff = (pos - pArr[newPId].pos);
                     if(diff.norm2() < size){
                         pIdArr.insert(newPId);
                     }

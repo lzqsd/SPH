@@ -12,17 +12,18 @@
 
 class solver{
 public:
-    solver( float S, std::vector<objLoader::shape_t> shs, 
+    solver( float S, const std::vector<objLoader::shape_t>& shs,  
+            const std::vector<float3>& box, 
             int gridNum = 10000, int fps = 30, 
             float3 G = float3(0.0f, 9.8f, 0.0f), 
-            float d = 1e3f, float stiff = 1119e3f, float v=1);
+            float d = 1e3f, float stiff = 1119e3f, float v=1 );
     // Init grid 
     void init(std::vector<particle>& particleArr );
 
     // Update the velocity and location 
     // Return true when finish simulating a new frame 
     // Return false otherwise
-    bool update(std::vector<particle>& particleArr );
+    virtual bool update(std::vector<particle>& particleArr ) = 0;
 
     // Get the parameters of solver 
     float getFps() {return framePerSec; }
@@ -35,6 +36,8 @@ public:
     float getViscosity() {return viscosity; }
     float3 getGravityAcce() { return gravityAcce; }
 
+    const hashGrid& getGrid() { return grid; }
+
 protected:
     // Steps to compute velocity
     void computeDensity(int pId, std::unordered_set<int>& neighborArr, 
@@ -45,6 +48,9 @@ protected:
     float3 computeViscosityForce(int pId, std::unordered_set<int>& neighborArr, 
             std::vector<particle>& particleArr );
     float3 computeGravityForce(int pId, std::vector<particle>& particleArr ); 
+
+    // check if a point is in the box
+    bool checkValid(const float3& pos );
 
     // Reflect the velocity and location if hit a boundary 
     bool reflectAtBoundary(const float3& pos1, float3& pos2, float3& velocity);
@@ -75,6 +81,7 @@ protected:
     eulerIntegrator integrator;
     
     std::vector<objLoader::shape_t> shapes;
+    std::vector<float3> volumeBox;
 };
 
 #endif

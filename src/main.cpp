@@ -9,6 +9,7 @@
 #include "loader.h"
 #include "particle.h"
 #include "solver.h"
+#include "basicSolver.h"
 #include "eosSolver.h"
 #include "writer.h"
 
@@ -16,15 +17,15 @@ int main(int argc, char** argv )
 {   
     // Water box 
     std::string waterFile; 
-    // Container, will keep still forever 
-    std::vector<std::string > containerFiles; 
-    // Objects, can be moved by water 
+    // Volume box 
+    std::string volumeFile;
+    // Objects 
     std::vector<std::string > objFiles;
     // Output directory 
     std::string outputDir;
     
     // Length of the video
-    float timeLength = 3.0f;
+    float timeLength = 7;
 
     // Simulatuion parameters 
     int framePerSec = 30;
@@ -33,10 +34,11 @@ int main(int argc, char** argv )
     float stiffness = 1.119e3f; 
     float viscosity = 1e-6;
     int numOfParticles = 10000;
+    int numOfVolumes = 1000000;
     bool noDivergence = false;
 
     // hash grid parameter 
-    int gridNum = 10000;
+    int gridNum = 1000;
 
     for(int i = 0; i < argc; i++){
         if(i == 0){
@@ -49,6 +51,13 @@ int main(int argc, char** argv )
                 exit(1);
             }
             waterFile = std::string(argv[++i] ); 
+        }
+        else if(std::string(argv[i]) == std::string("-volume") ){
+            if(i == argc -1){
+                std::cout<<"Missing input variable"<<std::endl;
+                exit(1);
+            }
+            volumeFile = std::string(argv[++i] );
         }
         else if(std::string(argv[i] ) == std::string("-objs") ){
             if(i == argc - 1){
@@ -115,6 +124,13 @@ int main(int argc, char** argv )
             }
             numOfParticles = atoi(argv[++i] );
         }
+        else if(std::string(argv[i]) == std::string("-numOfVolumes") ){
+            if(i == argc - 1){
+                std::cout<<"Missing input variable"<<std::endl;
+                exit(1); 
+            }
+            numOfVolumes = atoi(argv[++i] );
+        }
         else if(std::string(argv[i]) == std::string("-gridNum") ){
             if(i == argc - 1){
                 std::cout<<"Missing input variable"<<std::endl;
@@ -122,7 +138,7 @@ int main(int argc, char** argv )
             }
             gridNum = atoi(argv[++i] );
         }
-        else if(std::string(argv[i]) == std::string("--noDivergence") ){
+        else if(std::string(argv[i]) == std::string("-noDivergence") ){
             noDivergence = true;
         }
         else{
@@ -135,7 +151,11 @@ int main(int argc, char** argv )
 
     // load water box  
     std::vector<float3> waterBox;
-    loadWaterBox(waterFile, waterBox );
+    loadBox(waterFile, waterBox );
+
+    // load volume box 
+    std::vector<float3> volumeBox;
+    loadBox(volumeFile, volumeBox );
 
     // load obj 
     std::vector<objLoader::shape_t> shapes(objFiles.size() );
@@ -152,31 +172,36 @@ int main(int argc, char** argv )
     std::vector<particle> particleArr; 
     init.initialize(particleArr, waterBox, size );
 
-    // Init solver 
+    // Init density volume 
+    densityVolume volume(volumeBox, numOfVolumes, size, densityRest );
+
     solver* fluidSolver = NULL;
+
+    // Init solver 
     if(noDivergence == true){
-        fluidSolver = new eosSolver(size, shapes, 
+        std::cout<<"Use no divergence solver."<<std::endl;
+        fluidSolver = new eosSolver(size, shapes, volumeBox, 
                 gridNum, framePerSec, 
                 gravity, densityRest, stiffness, viscosity );
     }
     else{
-        fluidSolver = new solver(size, shapes, 
+        std::cout<<"Use basic solver."<<std::endl;
+        fluidSolver = new basicSolver(size, shapes, volumeBox,
                 gridNum, framePerSec, 
                 gravity, densityRest, stiffness, viscosity );
     }
-    fluidSolver -> init(particleArr );
-
-
+    fluidSolver -> init(particleArr ); 
     // Start simulating  
     while(fluidSolver -> getTimeElapse() < timeLength){
-        bool isNextFrame = fluidSolver -> update(particleArr );
+        bool isNextFrame = fluidSolver -> update(particleArr ); 
         if(isNextFrame == true){
             printf("Frame %d, Time %.4f/%.4f \n", 
                     fluidSolver -> getFrameCount(), fluidSolver -> getTimeElapse(), timeLength);
+            volume.buildVolume(particleArr, fluidSolver->getGrid() );
             writeRawParticleData(outputDir, particleArr, fluidSolver -> getFrameCount() );
+            writeVolumeData(outputDir, volume, fluidSolver -> getFrameCount() );
         }
     }
     delete fluidSolver;
-    
     return 0;
 }

@@ -10,6 +10,8 @@
 
 class particle{
 public:
+    particle();
+
     float3 pos;
     float3 vel;
     float mass;
@@ -17,6 +19,7 @@ public:
     float density;
 
     int gridId;
+    bool isValid;
 private:
 };
 

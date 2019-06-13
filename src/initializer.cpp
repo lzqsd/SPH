@@ -91,13 +91,13 @@ void initializer::initializeParticles(
                 float dy = distribution(generator );
                 float dz = distribution(generator );
 
-                if( (dx*0.001 + k) * h > length || (dy*0.001 + j) *h > width 
-                        || (dz*0.001 + i) *h > height) {
+                if( (dx*0.000 + k) * h > length || (dy*0.000 + j) *h > width 
+                        || (dz*0.00 + i) *h > height) {
                     continue;
                 }
 
-                float3 pos = sp + dx*0.001*h*xAxis + 
-                    dy*0.001*h*yAxis + dz*0.001*h*zAxis;
+                float3 pos = sp + dx*0.00*h*xAxis + 
+                    dy*0.00*h*yAxis + dz*0.00*h*zAxis;
                 particle p;
                 p.pos = pos;
                 p.vel = float3(0.0f, 0.0f, 0.0f);

@@ -1,6 +1,6 @@
 # SPH
 
-Thie repository contains code of smoothed particle Hydrodynamics (SPH). 
+Thie repository contains code of smoothed particle hydrodynamics (SPH). 
 The implementation follows the EGSR 2014 tutorial "SPH Fluids in Computer Graphics".
 Two solvers are included: the basic solver and the non-iterative EOS solver. 
 Code to generate 3D mesh using marching cube is also provided. 
